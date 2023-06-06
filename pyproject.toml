@@ -1,0 +1,24 @@
+
+# -- Build -----------------------------------------------------------------------------
+
+[build-system]
+requires = [
+    "setuptools",
+    "setuptools_scm[toml]",
+    "setuptools_scm_git_archive",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools_scm]
+write_to = "_version.py"
+git_describe_command = "git describe --dirty --tags --long --match * --first-parent"
+
+
+# -- Black -----------------------------------------------------------------------------
+
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = "__init__.py|__main__.py|_version.py"
