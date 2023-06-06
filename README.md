@@ -6,7 +6,7 @@
 ## Install
 
 ```shell
-pip install git+https://github.com/dylanljones/ftmplt.git
+pip install pip install git+ssh://git@github.com/dylanljones/ftmplt.git
 ```
 
 
