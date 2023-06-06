@@ -7,6 +7,7 @@
 import re
 import string
 import dataclasses
+from datetime import datetime
 from typing import List, Tuple, Optional, Union, Dict, Any
 
 __all__ = ["Template", "parse", "search"]
@@ -73,11 +74,15 @@ def format_type(spec: str = None) -> Optional[type]:
     if not typechar.isalpha():
         return None
     fmt_int = ("b", "d", "o")  # , "x", "X")
-    fmt_float = ("e", "E", "f", "F", "g", "G", "n")
+    fmt_float = ("e", "E", "f", "F", "g", "G", "n", "%")
     if typechar.lower() in fmt_int:
         return int
     if typechar.lower() in fmt_float:
         return float
+
+    if "%" in spec[:-1]:
+        return datetime
+
     supported = fmt_int + fmt_float
     raise ValueError(
         f"Type {typechar} of format specifier {spec} not supported. "
@@ -85,10 +90,13 @@ def format_type(spec: str = None) -> Optional[type]:
     )
 
 
-def convert_type(type_: type, value: Any) -> Any:
+def convert_type(spec: str, value: Any) -> Any:
     """Convert value to given type"""
+    type_ = format_type(spec)
     if type_ is None:
         return value
+    if type_ is datetime:
+        return datetime.strptime(value, spec)
     return type_(value)
 
 
@@ -225,7 +233,7 @@ def _parse(
         k = field.name
         if k.isdigit():
             k = int(k)
-        data[k] = convert_type(field.type, raw_data[field.group_name])
+        data[k] = convert_type(field.spec, raw_data[field.group_name])
         # Get span of field
         spans[k] = match.span(field.group_name)
 
@@ -278,7 +286,7 @@ def _search(fields: List[FormatField], item: Key, text: str) -> SearchResult:
     if match is None:
         raise ValueError(f"Field {item} not found in text")
     value = match.group(field.group_name)
-    value = convert_type(field.type, value)
+    value = convert_type(field.spec, value)
     span = match.span(field.group_name)
     return value, span
 
@@ -318,6 +326,14 @@ class Template:
     def fields(self) -> List[FormatField]:
         """List of format-string fields"""
         return self._fields
+
+    @property
+    def named_fields(self):
+        return {field.name: field for field in self.fields if not field.name.isdigit()}
+
+    @property
+    def positional_fields(self):
+        return {field.name: field for field in self.fields if field.name.isdigit()}
 
     def get_field(self, key: Key) -> FormatField:
         """Get field by name or index

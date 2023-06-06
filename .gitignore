@@ -1,10 +1,15 @@
 
 # -- Project gitignore -----------------------------------------------------------------
 
+main*.py
+
 
 # setuptools_scm version file
 #  Use this if the project uses pyproject.toml with setuptools_scm instead of setup.py
 _version.py
+
+# git-chglog configuration file
+.chglog/
 
 
 # -- Python gitignore ------------------------------------------------------------------
