@@ -42,9 +42,13 @@ pip install git+https://github.com/dylanljones/ftmplt.git
 ```python
 >>> import ftmplt
 >>> template = ftmplt.Template("Hello, my name is {name} and I am {age:d} years old.")
+>>> string = "Hello, my name is John and I am 42 years old."
 
->>> template.parse("Hello, my name is John and I am 42 years old.")
+>>> template.parse(string)
 {'name': 'John', 'age': 42}
+
+>>> template.search("name", string)
+('John', (19, 23))
 
 >>> template.format({"name": "John", "age": 42})
 "Hello, my name is John and I am 42 years old."
