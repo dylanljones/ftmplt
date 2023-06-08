@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-# This code is part of fparser.
+# This code is part of ftmplt.
 #
 # Copyright (c) 2023, Dylan Jones
 
@@ -10,7 +10,7 @@ import dataclasses
 from datetime import datetime
 from typing import List, Tuple, Optional, Union, Dict, Any
 
-__all__ = ["Template", "parse", "search"]
+__all__ = ["Template", "parse", "search", "format"]
 
 Key = Union[int, str]
 Result = Dict[Key, Any]

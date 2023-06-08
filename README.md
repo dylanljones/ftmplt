@@ -13,7 +13,7 @@ Parse strings using a specification based on the Python format() syntax.
 ## Installation
 
 ```shell
-pip install pip install git+ssh://git@github.com/dylanljones/ftmplt.git
+pip install git+ssh://git@github.com/dylanljones/ftmplt.git
 ```
 
 
@@ -95,8 +95,4 @@ data["n"] = 100
 ...
 # Update file contents
 file.write_text(template.format(data))
-```
-
-
-
 ```
