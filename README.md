@@ -13,13 +13,13 @@ Parse strings using a specification based on the Python format() syntax.
 ## Installation
 
 ```shell
-pip install git+ssh://git@github.com/dylanljones/ftmplt.git
+pip install git+https://github.com/dylanljones/ftmplt.git
 ```
 
 
 ## Usage
 
-Define a template using the Python format string syntax. 
+Define a template using the Python format string syntax.
 From there it's a simple thing to parse, search or format a string.
 ```python
 >>> import ftmplt
@@ -43,7 +43,7 @@ or search a string for some pattern:
 
 ### The template object
 
-If you're going to use the same pattern to match lots of strings you can use the 
+If you're going to use the same pattern to match lots of strings you can use the
 ``Template`` object. Once initialised, the template object can be used similarly
 to the functions above:
 
