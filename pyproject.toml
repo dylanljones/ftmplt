@@ -1,14 +1,41 @@
 
+# -- Project metadata ------------------------------------------------------------------
+
+[project]
+name = "ftmplt"
+description = "Simple string parsing and formatting using Python's format strings"
+readme = "README.md"
+authors = [
+    {name = "Dylan Jones", email = "dylanljones94@gmail.com"},
+]
+license = {file = "LICENSE"}
+dynamic = ["version"]
+requires-python = ">=3.7"
+
+[project.optional-dependencies]
+test = [
+    "hypothesis>=6.0.0",
+    "pytest>=6.2.0",
+    "pytest-cov",
+]
+
+
 # -- Build -----------------------------------------------------------------------------
 
 [build-system]
 requires = [
-    "setuptools",
-    "setuptools_scm[toml]",
+    "setuptools >= 61.0.0",
+    "setuptools_scm[toml] >= 4",
     "setuptools_scm_git_archive",
-    "wheel",
 ]
 build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools]
+py-modules = ["ftmplt"]
+platforms = ["any"]
+zip-safe = false
+include-package-data = true
 
 
 [tool.setuptools_scm]
@@ -21,4 +48,26 @@ git_describe_command = "git describe --dirty --tags --long --match * --first-par
 [tool.black]
 line-length = 88
 include = '\.pyi?$'
-exclude = "__init__.py|__main__.py|_version.py"
+exclude = "_version.py"
+
+
+# -- Linting ---------------------------------------------------------------------------
+
+[tool.flake8]
+max-line-length = 88
+ignore = ["D203"]
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    ".idea",
+    "__pycache__",
+    "build",
+    "dist",
+    "_version.py",
+    "docs/*",
+]
+
+[tool.pydocstyle]
+add_ignore = [
+    "D105",  # ignore undocumented dunder methods like ``__str__`
+]
