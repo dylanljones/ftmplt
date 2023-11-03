@@ -1,8 +1,54 @@
-# coding: utf-8
-#
-# This code is part of ftmplt.
-#
-# Copyright (c) 2023, Dylan Jones
+# -*- coding: utf-8 -*
+# Author: Dylan Jones
+# Date:   2023-06-22
+
+"""fTmplt: Simple string parsing and formatting using Python's format strings
+
+This project is similar to [fparse](https://github.com/catalystneuro/fparse), but
+improves parsing and formatting. It was originally developed to parse and format
+input and output files for various computational physics libraries.
+
+Parse strings using a specification based on the Python format() syntax.
+
+Examples
+--------
+
+Define a template using the Python format string syntax.
+From there it's a simple thing to parse, search or format a string.
+
+>>> import ftmplt
+>>> tpl = "Hello, my name is {name} and I am {age:d} years old."
+>>> s = "Hello, my name is John and I am 42 years old."
+
+Parse all parameters from a string:
+
+>>> ftmplt.parse(tpl, s)
+{'name': 'John', 'age': 42}
+
+or search a string for some pattern:
+
+>>> ftmplt.search(tpl, s, "name")
+('John', (19, 23))
+
+>>> ftmplt.search(tpl, s, "age")
+(42, (33, 35))
+
+If you're going to use the same pattern to match lots of strings you can use the
+``Template`` object. Once initialised, the template object can be used similarly
+to the functions above:
+>>> import ftmplt
+>>> template = ftmplt.Template("Hello, my name is {name} and I am {age:d} years old.")
+>>> s = "Hello, my name is John and I am 42 years old."
+
+>>> template.parse(s)
+{'name': 'John', 'age': 42}
+
+>>> template.search("name", s)
+('John', (19, 23))
+
+>>> template.format({"name": "John", "age": 42})
+"Hello, my name is John and I am 42 years old."
+"""
 
 import re
 import string
@@ -183,7 +229,7 @@ def _compile_fields(
         text_suffix = items[i + 1][0]
         type_ = format_type(spec)
         if group_name in group_names:
-            group = rf"((\n|.)*)"  # rf"(.*)"
+            group = rf"((\n|.)*)"  # noqa: F541
         else:
             group = rf"(?P<{group_name}>(\n|.)*?)"
             pattern_str = re.escape(text) + group + re.escape(text_suffix)
@@ -317,7 +363,7 @@ class Template:
         self,
         template: str,
         ignore_case: bool = False,
-        flags: Union[int, re.RegexFlag] = None
+        flags: Union[int, re.RegexFlag] = None,
     ):
         self.template = template
         self._fields, self._pattern = _compile_fields(template, ignore_case, flags)
