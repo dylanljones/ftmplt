@@ -90,7 +90,7 @@ def test_format_string(name, spec, conv, fstr):
 ])
 def test_format_type(fstr, type_, base):
     """Test parsing the dtype of a format string."""
-    t, b = ftmplt.format_type(fstr)
+    t, b = ftmplt._format_type(fstr)
     assert t == type_
     assert b == base
 
