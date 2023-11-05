@@ -197,3 +197,43 @@ def test_parse_datetime(fmt):
     parsed = ftmplt.parse(fstr, s)
     actual = datetime.strptime(now.strftime(fmt), fmt)
     assert parsed[0] == actual
+
+
+def test_default_fields():
+    fstr = "Beginning {} {:d} {:f} end"
+    a, b, c = "text", 1, 1.1
+    s = fstr.format(a, b, c)
+    parsed = ftmplt.parse(fstr, s)
+    assert parsed[0] == a
+    assert parsed[1] == b
+    assert parsed[2] == c
+
+
+def test_indexed_fields():
+    fstr = "Beginning {0} {1:d} {2:f} end"
+    a, b, c = "text", 1, 1.1
+    s = fstr.format(a, b, c)
+    parsed = ftmplt.parse(fstr, s)
+    assert parsed[0] == a
+    assert parsed[1] == b
+    assert parsed[2] == c
+
+
+def test_named_fields():
+    fstr = "Beginning {a} {b:d} {c:f} end"
+    a, b, c = "text", 1, 1.1
+    s = fstr.format(a=a, b=b, c=c)
+    parsed = ftmplt.parse(fstr, s)
+    assert parsed["a"] == a
+    assert parsed["b"] == b
+    assert parsed["c"] == c
+
+
+def test_mixed_fields():
+    fstr = "Beginning {0} {1:d} {c:f} end"
+    a, b, c = "text", 1, 1.1
+    s = fstr.format(a, b, c=c)
+    parsed = ftmplt.parse(fstr, s)
+    assert parsed[0] == a
+    assert parsed[1] == b
+    assert parsed["c"] == c

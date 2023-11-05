@@ -2,12 +2,10 @@
 
 > Simple string parsing and formatting using Python's format strings
 
-This project is similar to [fparse](https://github.com/catalystneuro/fparse), but
-improves parsing and formatting. It was originally developed to parse and format
+This project is similar to [parse], but emphasises on format strings that are both 
+parsable and formattable. This means only format specifiers that are both valid
+for parsing and formatting are supported. It was originally developed to parse and format
 input and output files for various computational physics libraries.
-
-Parse strings using a specification based on the Python format() syntax.
-> ``parse()`` is the opposite of ``format()``
 
 
 ## Installation
@@ -15,6 +13,39 @@ Parse strings using a specification based on the Python format() syntax.
 ```shell
 pip install git+https://github.com/dylanljones/ftmplt.git
 ```
+
+## Format Specification
+
+The full ``format()`` [Format Specification Mini-Language][format-spec] with all types
+is supported:
+
+> [[fill]align][sign][0][width][.precision][type]
+
+| Type | Description                               | Output    |
+|:-----|:------------------------------------------|:----------|
+| None | Unformatted strings                       | ``str``   |
+| d    | Decimal integer                           | ``int``   |
+| b    | Binary integer                            | ``int``   |
+| o    | Octal integer                             | ``int``   |
+| x    | Hex integer                               | ``int``   |
+| f    | Fixed point floating point                | ``float`` |
+| e    | Floating-point numbers with exponent      | ``float`` |
+| g    | General number format (either d, f or e)  | ``float`` |
+| %    | Percentage                                | ``float`` |
+
+Additionally, ``datetime`` objects can be parsed and formatted using the ``strftime()``
+[Format Codes][datetime-spec].
+
+The differences between ``parse()`` and ``format()`` are:
+
+- The align operators will cause spaces (or specified fill character) to be stripped 
+  from the parsed value. The width is not enforced; it just indicates there may be 
+  whitespace or "0"s to strip.
+- Numeric parsing will automatically handle a "0b", "0o" or "0x" prefix. 
+  That is, the "#" format character is handled automatically by d, b, o and x formats. 
+  For "d" any will be accepted, but for the others the correct prefix must be present if at all.
+- The "e" and "g" types are case-insensitive so there is not need for the "E" or "G" types. 
+  The "e" type handles Fortran formatted numbers (no leading 0 before the decimal point).
 
 
 ## Usage
@@ -96,3 +127,7 @@ data["n"] = 100
 # Update file contents
 file.write_text(template.format(data))
 ```
+
+[parse]: https://github.com/r1chardj0n3s/parse
+[format-spec]: https://docs.python.org/3/library/string.html#format-specification-mini-language
+[datetime-spec]: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
