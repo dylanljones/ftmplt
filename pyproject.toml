@@ -10,7 +10,7 @@ authors = [
 ]
 license = {file = "LICENSE"}
 dynamic = ["version"]
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 
 [project.optional-dependencies]
 test = [
