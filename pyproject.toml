@@ -10,12 +10,12 @@ authors = [
 ]
 license = {file = "LICENSE"}
 dynamic = ["version"]
-requires-python = ">=3.7"
+requires-python = ">=3.6"
 
 [project.optional-dependencies]
 test = [
-    "hypothesis>=6.0.0",
-    "pytest>=6.2.0",
+    # "hypothesis>=6.0.0",
+    "pytest",
     "pytest-cov",
 ]
 
