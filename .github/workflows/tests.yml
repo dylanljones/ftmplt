@@ -72,10 +72,4 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest tests/ --cov=ftmplt --cov-report=xml -v
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        env_vars: OS,PYTHON
-        verbose: True
+        pytest tests.py
