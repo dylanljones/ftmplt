@@ -14,9 +14,7 @@ requires-python = ">=3.7"
 
 [project.optional-dependencies]
 test = [
-    # "hypothesis>=6.0.0",
     "pytest",
-    "pytest-cov",
 ]
 
 
