@@ -62,6 +62,29 @@ Key = Union[int, str]
 Result = Dict[Key, Any]
 SearchResult = Tuple[Any, Tuple[int, int]]
 
+FMT_INT = (
+    "b",  # Binary format. Outputs the number in base 2.
+    "d",  # Decimal Integer. Outputs the number in base 10.
+    "o",  # Octal format. Outputs the number in base 8.
+    "x",  # Hex format. Outputs the number in base 16, using lower-case letters.
+    "X",  # Hex format. Outputs the number in base 16, using upper-case letters.
+          # In case '#' is specified, the prefix '0x' will be upper-cased to '0X'.
+)
+
+FMT_FLOAT = (
+    "e",  # Exponent notation. Prints the number in scientific notation using the
+          # letter 'e' to indicate the exponent.
+    "E",  # Exponent notation. Same as 'e' except it uses an upper case 'E'.
+    "f",  # Fixed-point notation. Displays the number as a fixed-point number.
+    "F",  # Fixed-point notation. Same as 'f' but converts nan to NAN and inf to INF.
+    "g",  # General format. For a given precision p >= 1, this rounds the number to
+          # p significant digits and then formats the result in either fixed-point
+          # format or in scientific notation, depending on its magnitude.
+    "G",  # General format. Same as 'g' except switches to 'E' if the number gets
+          # too large. The representations of infinity and NaN are uppercased, too.
+    "%",  # Percentage. Multiplies the number by 100 and displays in fixed ('f') format
+)
+
 
 @dataclasses.dataclass
 class FormatField:
@@ -72,6 +95,7 @@ class FormatField:
     conv: str
     fstr: str
     type: type
+    base: int
     pattern: re.Pattern
     group_name: str
 
@@ -102,7 +126,7 @@ def format_string(name: str = None, spec: str = None, conv: str = None) -> str:
     return "{" + fstr + "}"
 
 
-def format_type(spec: str = None) -> Optional[type]:
+def _format_type(spec: str = None) -> Optional[Tuple[Optional[type], Optional[int]]]:
     """Return type of format specifier
 
     Parameters
@@ -115,38 +139,58 @@ def format_type(spec: str = None) -> Optional[type]:
     type_ : type
     """
     if not spec:
-        return None
+        return None, None
     typechar = spec[-1]
-    if not typechar.isalpha():
-        return None
-    fmt_int = ("b", "d", "o")  # , "x", "X")
-    fmt_float = ("e", "E", "f", "F", "g", "G", "n", "%")
-    if typechar.lower() in fmt_int:
-        return int
-    if typechar.lower() in fmt_float:
-        return float
+    if not typechar.isalpha() and typechar != "%":
+        return None, None
+
+    if spec.endswith("%d"):
+        return datetime, None
+    elif spec.endswith("%b"):
+        return datetime, None
+
+    if typechar.lower() in FMT_INT:
+        base = None
+        if typechar.lower() == "b":
+            base = 2
+        elif typechar.lower() == "o":
+            base = 8
+        elif typechar.lower() == "x":
+            base = 16
+        return int, base
+    if typechar.lower() in FMT_FLOAT:
+        return float, None
 
     if "%" in spec[:-1]:
-        return datetime
+        return datetime, None
 
-    supported = fmt_int + fmt_float
+    supported = FMT_INT + FMT_FLOAT
     raise ValueError(
         f"Type {typechar} of format specifier {spec} not supported. "
         f"Valid types are: {supported}"
     )
 
 
-def convert_type(spec: str, value: Any) -> Any:
+def _convert_type(field: FormatField, value: Any) -> Any:
     """Convert value to given type"""
-    type_ = format_type(spec)
-    if type_ is None:
+    # Parse int
+    if field.type is int:
+        return int(value, field.base) if field.base else int(value)
+    # Parse float
+    if field.type is float:
+        if field.spec.endswith("%"):
+            value = float(value[:-1]) / 100
+        else:
+            value = float(value)
         return value
-    if type_ is datetime:
-        return datetime.strptime(value, spec)
-    return type_(value)
+    # Parse datetime
+    if field.type is datetime:
+        return datetime.strptime(value, field.spec)
+    # Parse string
+    return value.strip()
 
 
-def split_data(data: Dict[Key, Any]) -> Tuple[Tuple[Any], Dict[str, Any]]:
+def _split_data(data: Dict[Key, Any]) -> Tuple[Tuple[Any], Dict[str, Any]]:
     """Split data into args and kwargs
 
     Parameters
@@ -227,14 +271,16 @@ def _compile_fields(
         # Initialize field
         fstr = format_string(name, spec, conv)
         text_suffix = items[i + 1][0]
-        type_ = format_type(spec)
+        type_, base = _format_type(spec)
         if group_name in group_names:
             group = rf"((\n|.)*)"  # noqa: F541
         else:
             group = rf"(?P<{group_name}>(\n|.)*?)"
             pattern_str = re.escape(text) + group + re.escape(text_suffix)
             pattern = re.compile(pattern_str, flags=flags)
-            field = FormatField(name, spec, conv, fstr, type_, pattern, group_name)
+            field = FormatField(
+                name, spec, conv, fstr, type_, base, pattern, group_name
+            )
             fields.append(field)
 
         # Update full regex pattern string
@@ -279,7 +325,7 @@ def _parse(
         k = field.name
         if k.isdigit():
             k = int(k)
-        data[k] = convert_type(field.spec, raw_data[field.group_name])
+        data[k] = _convert_type(field, raw_data[field.group_name])
         # Get span of field
         spans[k] = match.span(field.group_name)
 
@@ -332,7 +378,7 @@ def _search(fields: List[FormatField], item: Key, text: str) -> SearchResult:
     if match is None:
         raise ValueError(f"Field {item} not found in text")
     value = match.group(field.group_name)
-    value = convert_type(field.spec, value)
+    value = _convert_type(field, value)
     span = match.span(field.group_name)
     return value, span
 
@@ -352,7 +398,7 @@ def _format(template: str, data: Result) -> str:
     text : str
         Formatted text
     """
-    args, kwargs = split_data(data)
+    args, kwargs = _split_data(data)
     return template.format(*args, **kwargs)
 
 
