@@ -2,7 +2,7 @@
 
 > Simple string parsing and formatting using Python's format strings
 
-This project is similar to [parse], but emphasises on format strings that are both 
+This project is similar to [parse], but emphasizes on format strings that are both
 parsable and formattable. This means only format specifiers that are both valid
 for parsing and formatting are supported. It was originally developed to parse and format
 input and output files for various computational physics libraries.
@@ -38,13 +38,13 @@ Additionally, ``datetime`` objects can be parsed and formatted using the ``strft
 
 The differences between ``parse()`` and ``format()`` are:
 
-- The align operators will cause spaces (or specified fill character) to be stripped 
-  from the parsed value. The width is not enforced; it just indicates there may be 
+- The align operators will cause spaces (or specified fill character) to be stripped
+  from the parsed value. The width is not enforced; it just indicates there may be
   whitespace or "0"s to strip.
-- Numeric parsing will automatically handle a "0b", "0o" or "0x" prefix. 
-  That is, the "#" format character is handled automatically by d, b, o and x formats. 
+- Numeric parsing will automatically handle a "0b", "0o" or "0x" prefix.
+  That is, the "#" format character is handled automatically by d, b, o and x formats.
   For "d" any will be accepted, but for the others the correct prefix must be present if at all.
-- The "e" and "g" types are case-insensitive so there is not need for the "E" or "G" types. 
+- The "e" and "g" types are case-insensitive so there is not need for the "E" or "G" types.
   The "e" type handles Fortran formatted numbers (no leading 0 before the decimal point).
 
 
