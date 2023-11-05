@@ -67,9 +67,6 @@ jobs:
         pip install setuptools
         pip install .[test]
 
-    - name: Get package version
-      run: python setup.py --version
-
     - name: Run tests
       run: |
         pytest tests.py
