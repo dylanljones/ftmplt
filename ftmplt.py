@@ -4,11 +4,11 @@
 
 """fTmplt: Simple string parsing and formatting using Python's format strings
 
-This project is similar to [fparse](https://github.com/catalystneuro/fparse), but
-improves parsing and formatting. It was originally developed to parse and format
-input and output files for various computational physics libraries.
-
-Parse strings using a specification based on the Python format() syntax.
+This project is similar to [parse](https://github.com/r1chardj0n3s/parse),
+but emphasizes on format strings that are both parsable and formattable.
+This means only format specifiers that are both valid for parsing and formatting
+are supported. It was originally developed to parse and format input and output
+files for various computational physics libraries.
 
 Examples
 --------
