@@ -308,10 +308,10 @@ def test_mixed_fields():
 def test_multiline_text():
     fstr = dedent(
         """Beginning
-    {0}
-    {1:d}
-    {c:f}
-    end"""
+        {0}
+        {1:d}
+        {c:f}
+        end"""
     )
     a, b, c = "text", 1, 1.1
     s = fstr.format(a, b, c=c)
