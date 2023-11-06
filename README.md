@@ -1,5 +1,9 @@
 # fTmplt
 
+[![Tests][tests-badge]][tests-link]
+[![license: MIT][license-badge]][license-link]
+[![style: black][black-badge]][black-link]
+
 > Simple string parsing and formatting using Python's format strings
 
 This project is similar to [parse], but emphasizes on format strings that are both
@@ -131,3 +135,12 @@ file.write_text(template.format(data))
 [parse]: https://github.com/r1chardj0n3s/parse
 [format-spec]: https://docs.python.org/3/library/string.html#format-specification-mini-language
 [datetime-spec]: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+
+[tests-badge]: https://img.shields.io/github/actions/workflow/status/dylanljones/ftmplt/tests.yml?branch=master&label=tests&logo=github&style=flat
+[tests-link]: https://github.com/dylanljones/ftmplt/actions/workflows/tests.yml
+
+[license-badge]: https://img.shields.io/github/license/dylanljones/ftmplt?style=flat&color=lightgrey
+[license-link]: https://github.com/dylanljones/ftmplt/blob/master/LICENSE
+
+[black-badge]: https://img.shields.io/badge/code%20style-black-000000?style=flat
+[black-link]: https://github.com/psf/black
