@@ -130,10 +130,17 @@ def test_format_type(fstr, type_, base):
 
 
 def test_parse_str():
+    x = "text"
     fstr = "Beginning {} end"
-    s = fstr.format("text")
+    s = fstr.format(x)
     parsed = ftmplt.parse(fstr, s)
-    assert parsed[0] == "text"
+    assert parsed[0] == x
+
+    # Test string with spaces
+    fstr = "Beginning {:<20} end"
+    s = fstr.format(x)
+    parsed = ftmplt.parse(fstr, s)
+    assert parsed[0] == x
 
 
 @mark.parametrize(
