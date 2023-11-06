@@ -75,10 +75,10 @@ Parse all parameters from the string:
 ```
 or search a string for some pattern:
 ```python
->>> ftmplt.search(template, string, "name")
+>>> ftmplt.search(template, text, "name")
 ('John', (19, 23))
 
->>> ftmplt.search(template, string, "age")
+>>> ftmplt.search(template, text, "age")
 (42, (33, 35))
 ```
 
