@@ -59,12 +59,18 @@ From there it's a simple thing to parse, search or format a string.
 ```python
 >>> import ftmplt
 >>> template = "Hello, my name is {name} and I am {age:d} years old."
->>> string = "Hello, my name is John and I am 42 years old."
 ```
 
-Parse all parameters from a string:
+Format the template string:
 ```python
->>> ftmplt.parse(template, string)
+>>> text = ftmplt.format(template, name="John", age=42)
+>>> text
+'Hello, my name is John and I am 42 years old.'
+```
+
+Parse all parameters from the string:
+```python
+>>> ftmplt.parse(template, text)
 {'name': 'John', 'age': 42}
 ```
 or search a string for some pattern:
@@ -85,16 +91,15 @@ to the functions above:
 ```python
 >>> import ftmplt
 >>> template = ftmplt.Template("Hello, my name is {name} and I am {age:d} years old.")
->>> string = "Hello, my name is John and I am 42 years old."
+>>> text = ftmplt.format(template, name="John", age=42)
+>>> text
+'Hello, my name is John and I am 42 years old.'
 
->>> template.parse(string)
+>>> template.parse(text)
 {'name': 'John', 'age': 42}
 
->>> template.search("name", string)
+>>> template.search("name", text)
 ('John', (19, 23))
-
->>> template.format({"name": "John", "age": 42})
-"Hello, my name is John and I am 42 years old."
 ```
 
 ### Example: Parsing a file
