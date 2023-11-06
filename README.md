@@ -104,9 +104,9 @@ Let's say you have a file ``data.txt`` with a bunch of parameters in it:
 Input-File
 N=50 M=100
 X=1.0 Y=2.0 Z=3.0
-Output-Text:
-Some multi-line
-output text to the end of the file
+Multiline text:
+Some text
+over multiple lines
 ```
 
 You can handle the file formatting and parsing with a template:
@@ -118,8 +118,8 @@ template = ftmplt.Template("""
 Input-File
 N={n:d} M={m:d}
 X={x:.1f} Y={y:.1f} Z={z:.f}
-Output-Text:
-{output}
+Multiline text:
+{text}
 """)
 
 file = Path("data.txt")
