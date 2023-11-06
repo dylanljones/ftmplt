@@ -4,6 +4,7 @@
 
 from pytest import mark
 from pytz import timezone
+from textwrap import dedent
 from datetime import datetime
 import ftmplt
 
@@ -302,3 +303,77 @@ def test_mixed_fields():
     assert parsed[0] == a
     assert parsed[1] == b
     assert parsed["c"] == c
+
+
+def test_multiline_text():
+    fstr = dedent(
+        """Beginning
+    {0}
+    {1:d}
+    {c:f}
+    end"""
+    )
+    a, b, c = "text", 1, 1.1
+    s = fstr.format(a, b, c=c)
+    parsed = ftmplt.parse(fstr, s)
+    assert parsed[0] == a
+    assert parsed[1] == b
+    assert parsed["c"] == c
+
+
+def test_multiline_field():
+    tmplt = dedent(
+        """\
+        Beginning
+        {}
+        end"""
+    )
+    text = dedent(
+        """\
+        Beginning
+        This is a text
+        that spans multiple lines
+        in the middle of the string
+        end"""
+    )
+    parsed = ftmplt.parse(tmplt, text)
+    s = "This is a text\nthat spans multiple lines\nin the middle of the string"
+    assert parsed[0] == s
+
+
+def test_multiline_field_start():
+    tmplt = dedent(
+        """\
+        {}
+        end"""
+    )
+    text = dedent(
+        """\
+        This is a text
+        that spans multiple lines
+        at the start of the string
+        end"""
+    )
+    parsed = ftmplt.parse(tmplt, text)
+    s = "This is a text\nthat spans multiple lines\nat the start of the string"
+    assert parsed[0] == s
+
+
+def test_multiline_field_end():
+    tmplt = dedent(
+        """\
+        Beginning
+        {}
+        """
+    )
+    text = dedent(
+        """\
+        Beginning
+        This is a text
+        that spans multiple lines
+        at the end of the string
+        """
+    )
+    parsed = ftmplt.parse(tmplt, text)
+    s = "This is a text\nthat spans multiple lines\nat the end of the string"
+    assert parsed[0] == s
