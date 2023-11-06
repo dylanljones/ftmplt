@@ -62,28 +62,62 @@ Key = Union[int, str]
 Result = Dict[Key, Any]
 SearchResult = Tuple[Any, Tuple[int, int]]
 
+# Integer format specifiers
 FMT_INT = (
     "b",  # Binary format. Outputs the number in base 2.
     "d",  # Decimal Integer. Outputs the number in base 10.
     "o",  # Octal format. Outputs the number in base 8.
     "x",  # Hex format. Outputs the number in base 16, using lower-case letters.
     "X",  # Hex format. Outputs the number in base 16, using upper-case letters.
-          # In case '#' is specified, the prefix '0x' will be upper-cased to '0X'.
+    # In case '#' is specified, the prefix '0x' will be upper-cased to '0X'.
 )
 
+# Float format specifiers
 FMT_FLOAT = (
     "e",  # Exponent notation. Prints the number in scientific notation using the
-          # letter 'e' to indicate the exponent.
+    # letter 'e' to indicate the exponent.
     "E",  # Exponent notation. Same as 'e' except it uses an upper case 'E'.
     "f",  # Fixed-point notation. Displays the number as a fixed-point number.
     "F",  # Fixed-point notation. Same as 'f' but converts nan to NAN and inf to INF.
     "g",  # General format. For a given precision p >= 1, this rounds the number to
-          # p significant digits and then formats the result in either fixed-point
-          # format or in scientific notation, depending on its magnitude.
+    # p significant digits and then formats the result in either fixed-point
+    # format or in scientific notation, depending on its magnitude.
     "G",  # General format. Same as 'g' except switches to 'E' if the number gets
-          # too large. The representations of infinity and NaN are uppercased, too.
+    # too large. The representations of infinity and NaN are uppercased, too.
     "%",  # Percentage. Multiplies the number by 100 and displays in fixed ('f') format
 )
+
+# Datetime format specifiers
+FMT_DT = [
+    "%a",
+    "%A",
+    "%w",
+    "%d",
+    "%b",
+    "%B",
+    "%m",
+    "%y",
+    "%Y",
+    "%H",
+    "%I",
+    "%p",
+    "%M",
+    "%S",
+    "%f",
+    "%z",
+    "%Z",
+    "%j",
+    "%U",
+    "%W",
+    "%c",
+    "%x",
+    "%X",
+    "%%",
+    "%G",
+    "%u",
+    "%V",
+    "%d/%m/%y %H:%M:%S.%f",
+]
 
 
 @dataclasses.dataclass
@@ -144,9 +178,7 @@ def _format_type(spec: str = None) -> Optional[Tuple[Optional[type], Optional[in
     if not typechar.isalpha() and typechar != "%":
         return None, None
 
-    if spec.endswith("%d"):
-        return datetime, None
-    elif spec.endswith("%b"):
+    if any(spec.endswith(fmt) for fmt in FMT_DT):
         return datetime, None
 
     if typechar.lower() in FMT_INT:
