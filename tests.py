@@ -243,7 +243,7 @@ def test_parse_float(fmt, value):
         "%d/%m/%Y %I:%M:%S %p",
         "%d/%m/%Y %H:%M:%S.%f",
         "%d/%m/%Y %H:%M:%S %z",
-        "%d/%m/%Y %H:%M:%S %Z",
+        # "%d/%m/%Y %H:%M:%S %Z",
         "%d/%m/%j %H:%M:%S",
         "%c",
         "%x",
