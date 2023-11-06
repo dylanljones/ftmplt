@@ -91,7 +91,7 @@ to the functions above:
 ```python
 >>> import ftmplt
 >>> template = ftmplt.Template("Hello, my name is {name} and I am {age:d} years old.")
->>> text = ftmplt.format(template, name="John", age=42)
+>>> text = template.format(name="John", age=42)
 >>> text
 'Hello, my name is John and I am 42 years old.'
 
