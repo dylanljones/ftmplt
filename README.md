@@ -2,7 +2,7 @@
 
 [![Tests][tests-badge]][tests-link]
 [![license: MIT][license-badge]][license-link]
-[![style: black][black-badge]][black-link]
+[![style: ruff][ruff-badge]][ruff-link]
 
 > Simple string parsing and formatting using Python's format strings
 
@@ -143,9 +143,7 @@ file.write_text(template.format(data))
 
 [tests-badge]: https://img.shields.io/github/actions/workflow/status/dylanljones/ftmplt/tests.yml?branch=master&label=tests&logo=github&style=flat
 [tests-link]: https://github.com/dylanljones/ftmplt/actions/workflows/tests.yml
-
 [license-badge]: https://img.shields.io/github/license/dylanljones/ftmplt?style=flat&color=lightgrey
 [license-link]: https://github.com/dylanljones/ftmplt/blob/master/LICENSE
-
-[black-badge]: https://img.shields.io/badge/code%20style-black-000000?style=flat
-[black-link]: https://github.com/psf/black
+[ruff-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+[ruff-link]: https://github.com/astral-sh/ruff

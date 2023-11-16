@@ -42,20 +42,10 @@ write_to = "_version.py"
 git_describe_command = "git describe --dirty --tags --long --match * --first-parent"
 
 
-# -- Black -----------------------------------------------------------------------------
+# -- Ruff ------------------------------------------------------------------------------
 
-[tool.black]
-line-length = 88
-include = '\.pyi?$'
-exclude = "_version.py"
-
-
-# -- Linting ---------------------------------------------------------------------------
-
-[tool.flake8]
-max-line-length = 88
-ignore = ["D203"]
-extend-ignore = ["E203", "W503"]
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
 exclude = [
     ".git",
     ".idea",
@@ -63,10 +53,28 @@ exclude = [
     "build",
     "dist",
     "_version.py",
-    "docs/*",
+    ".ruff_cache",
+    "__pypackages__",
+    "main*.py"
 ]
+line-length = 88
+indent-width = 4
 
-[tool.pydocstyle]
-add_ignore = [
-    "D105",  # ignore undocumented dunder methods like ``__str__`
-]
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+select = ["E", "F"]
+ignore = []
+# Enable the isort rules.
+extend-select = ["I"]
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests.py" = ["E402"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
