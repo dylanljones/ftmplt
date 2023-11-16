@@ -2,10 +2,12 @@
 # Author: Dylan Jones
 # Date:   2023-11-05
 
+from datetime import datetime
+from textwrap import dedent
+
 from pytest import mark
 from pytz import timezone
-from textwrap import dedent
-from datetime import datetime
+
 import ftmplt
 
 

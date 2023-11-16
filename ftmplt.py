@@ -50,11 +50,11 @@ to the functions above:
 "Hello, my name is John and I am 42 years old."
 """
 
+import dataclasses
 import re
 import string
-import dataclasses
 from datetime import datetime
-from typing import List, Tuple, Optional, Union, Dict, Any
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 __all__ = ["Template", "parse", "search", "format"]
 
