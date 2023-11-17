@@ -1,6 +1,8 @@
 # fTmplt
 
 [![Tests][tests-badge]][tests-link]
+[![Version][pypi-badge]][pypi-link]
+[![Python][python-badge+]][pypi-link]
 [![license: MIT][license-badge]][license-link]
 [![style: ruff][ruff-badge]][ruff-link]
 
@@ -172,6 +174,9 @@ template.format_file(file, data)
 
 [tests-badge]: https://img.shields.io/github/actions/workflow/status/dylanljones/ftmplt/tests.yml?branch=master&label=tests&logo=github&style=flat
 [tests-link]: https://github.com/dylanljones/ftmplt/actions/workflows/tests.yml
+[python-badge+]: https://img.shields.io/badge/python-3.7+-blue.svg
+[pypi-badge]: https://img.shields.io/pypi/v/ftmplt?style=flat
+[pypi-link]: https://pypi.org/project/ftmplt/
 [license-badge]: https://img.shields.io/github/license/dylanljones/ftmplt?style=flat&color=lightgrey
 [license-link]: https://github.com/dylanljones/ftmplt/blob/master/LICENSE
 [ruff-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
