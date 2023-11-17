@@ -555,13 +555,15 @@ class Template:
         span = match.span(field.group_name)
         return value, span
 
-    def format(self, data: Data) -> str:
+    def format(self, *args, **kwargs) -> str:
         """Formats data using the template instance.
 
         Parameters
         ----------
-        data : dict[str|int, Any]
-            The data to format using the format string.
+        *args
+            Positional data to format using the format string.
+        **kwargs
+            keyword data to format using the format string.
 
         Returns
         -------
@@ -594,7 +596,7 @@ class Template:
         >>> template.format({0: "John", "age": 42})
         'My name is John and I am 42 years old'
         """
-        data = data.copy()
+        data = dict(*args, **kwargs)
         for key, value in data.items():
             if key in self._handlers:
                 handler = self._handlers[key]
@@ -655,25 +657,27 @@ class Template:
         text = file.read_text()
         return self.search(item, text)
 
-    def format_file(self, file: Union[str, Path], data: Data) -> None:
+    def format_file(self, file: Union[str, Path], *args, **kwargs) -> None:
         """Formats data using a template string and writes the text to a file.
 
         Parameters
         ----------
         file : str or pathlib.Path
             The path of the file.
-        data : dict[str|int, Any]
-            The data to format.
+        *args
+            Positional data to format using the format string.
+        **kwargs
+            keyword data to format using the format string.
 
         Examples
         --------
         Format a string and write it to a file:
 
         >>> template = Template("My name is {name} and I am {age:d} years old")
-        >>> template.format_file({"name": "John", "age": 42})
+        >>> template.format_file("data.txt", {"name": "John", "age": 42})
         """
         file = Path(file)
-        text = self.format(data)
+        text = self.format(*args, **kwargs)
         file.write_text(text)
 
 

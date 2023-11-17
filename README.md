@@ -102,6 +102,36 @@ to the functions above:
 ('John', (19, 23))
 ```
 
+### Custom Format fields
+
+You can define custom format fields by subclassing ``ftmplt.CustomFormatter`` and implementing
+the ``parse()`` and ``format()`` methods. For example, to parse and format a list of
+integers, use the following formatter:
+
+````python
+import ftmplt
+
+class ArrayFormatter(ftmplt.CustomFormatter):
+
+    def parse(self, text: str):
+        return [int(v) for v in text.split(",")]
+
+    def format(self, value) -> str:
+        return ", ".join([str(v) for v in value])
+````
+The formatter has to be initialized with the key (name or index) of the format field:
+
+````python
+>>> import ftmplt
+>>> template = ftmplt.Template("The values {arr} are an array.", ArrayFormatter("arr"))
+>>> text = template.format(arr=[1, 2, 3])
+>>> text
+'The values 1, 2, 3 are an array.'
+
+>>> template.parse(text)
+{'arr': [1, 2, 3]}
+````
+
 ### Example: Parsing a file
 
 Let's say you have a file ``data.txt`` with a bunch of parameters in it:
