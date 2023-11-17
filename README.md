@@ -116,9 +116,9 @@ over multiple lines
 
 You can handle the file formatting and parsing with a template:
 ```python
-from pathlib import Path
 import ftmplt
 
+file = "data.txt"
 template = ftmplt.Template("""
 Input-File
 N={n:d} M={m:d}
@@ -127,14 +127,13 @@ Multiline text:
 {text}
 """)
 
-file = Path("data.txt")
 # Read file and parse data
-data = template.parse(file.read_text())
+data = template.parse_file(file)
 # Update values
 data["n"] = 100
 ...
 # Update file contents
-file.write_text(template.format(data))
+template.format_file(file, data)
 ```
 
 [parse]: https://github.com/r1chardj0n3s/parse
