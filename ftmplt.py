@@ -308,7 +308,7 @@ def _compile_fields(
         text_suffix = items[i + 1][0]
         type_, base = _format_type(spec)
         if group_name in group_names:
-            group = rf"((\n|.)*)"  # noqa: F541
+            group = r"((\n|.)*)"
         else:
             group = rf"(?P<{group_name}>(\n|.)*?)"
             pattern_str = re.escape(text) + group + re.escape(text_suffix)
