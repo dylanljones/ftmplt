@@ -16,6 +16,11 @@ input and output files for various computational physics libraries.
 
 ## Installation
 
+ftmplt is available on [PyPI][pypi-link] and can be installed with ``pip``:
+```shell
+pip install ftmplt
+```
+Alternatively, it can be installed via GitHub:
 ```shell
 pip install git+https://github.com/dylanljones/ftmplt.git
 ```
