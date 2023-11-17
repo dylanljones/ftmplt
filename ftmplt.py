@@ -36,6 +36,7 @@ or search a string for some pattern:
 If you're going to use the same pattern to match lots of strings you can use the
 ``Template`` object. Once initialised, the template object can be used similarly
 to the functions above:
+
 >>> import ftmplt
 >>> template = ftmplt.Template("Hello, my name is {name} and I am {age:d} years old.")
 >>> s = "Hello, my name is John and I am 42 years old."
@@ -54,12 +55,14 @@ import dataclasses
 import re
 import string
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 __all__ = ["Template", "parse", "search", "format"]
 
 Key = Union[int, str]
-Result = Dict[Key, Any]
+Value = Union[int, float, str, datetime]
+Data = Dict[Key, Value]
 SearchResult = Tuple[Any, Tuple[int, int]]
 
 # Integer format specifiers
@@ -203,7 +206,7 @@ def _format_type(spec: str = None) -> Optional[Tuple[Optional[type], Optional[in
     )
 
 
-def _convert_type(field: FormatField, value: Any) -> Any:
+def _convert_type(field: FormatField, value: Value) -> Value:
     """Convert value to given type"""
     # Parse int
     if field.type is int:
@@ -328,7 +331,7 @@ def _compile_fields(
 
 def _parse(
     fields: List[FormatField], pattern: re.Pattern, text: str
-) -> Tuple[Result, Dict[Key, Tuple[int, int]]]:
+) -> Tuple[Data, Dict[Key, Tuple[int, int]]]:
     """Parse text with format-string fields
 
     Parameters
@@ -415,7 +418,7 @@ def _search(fields: List[FormatField], item: Key, text: str) -> SearchResult:
     return value, span
 
 
-def _format(template: str, data: Result) -> str:
+def _format(template: str, data: Data) -> str:
     """Generated formated string from template and data
 
     Parameters
@@ -452,11 +455,11 @@ class Template:
         return self._fields
 
     @property
-    def named_fields(self):
+    def named_fields(self) -> Dict[str, FormatField]:
         return {field.name: field for field in self.fields if not field.name.isdigit()}
 
     @property
-    def positional_fields(self):
+    def positional_fields(self) -> Dict[str, FormatField]:
         return {field.name: field for field in self.fields if field.name.isdigit()}
 
     def get_field(self, key: Key) -> FormatField:
@@ -478,7 +481,7 @@ class Template:
                 return field
         raise _get_field(self._fields, key)
 
-    def format(self, data) -> str:
+    def format(self, data: Data) -> str:
         """Format data using template string
 
         Parameters
@@ -494,28 +497,32 @@ class Template:
         Examples
         --------
         Named format fields:
+
         >>> template = Template("My name is {name} and I am {age:d} years old")
         >>> template.format({"name": "John", "age": 42})
         'My name is John and I am 42 years old'
 
         Indexed format fields:
+
         >>> template = Template("My name is {0} and I am {1:d} years old")
         >>> template.format({0: "John", 1: 42})
         'My name is John and I am 42 years old'
 
         Empty format fields:
+
         >>> template = Template("My name is {} and I am {:d} years old")
         >>> template.format({0: "John", 1: 42})
         'My name is John and I am 42 years old'
 
         Mixed format fields:
+
         >>> template = Template("My name is {} and I am {age:d} years old")
         >>> template.format({0: "John", "age": 42})
         'My name is John and I am 42 years old'
         """
         return _format(self.template, data)
 
-    def parse(self, text: str) -> Result:
+    def parse(self, text: str) -> Data:
         """Parse text using template string
 
         Parameters
@@ -534,21 +541,25 @@ class Template:
         Examples
         --------
         Named format fields:
+
         >>> template = Template("My name is {name} and I am {age:d} years old")
         >>> template.parse("My name is John and I am 42 years old")
         {'name': 'John', 'age': 42}
 
         Indexed format fields:
+
         >>> template = Template("My name is {0} and I am {1:d} years old")
         >>> template.parse("My name is John and I am 42 years old")
         {0: 'John', 1: 42}
 
         Empty format fields:
+
         >>> template = Template("My name is {} and I am {:d} years old")
         >>> template.parse("My name is John and I am 42 years old")
         {0: 'John', 1: 42}
 
         Mixed format fields:
+
         >>> template = Template("My name is {} and I am {age:d} years old")
         >>> template.parse("My name is John and I am 42 years old")
         {0: 'John', 'age': 42}
@@ -556,15 +567,15 @@ class Template:
         data, span = _parse(self._fields, self._pattern, text)
         return data
 
-    def search(self, item: Key, text: str) -> SearchResult:
+    def search(self, text: str, item: Key) -> SearchResult:
         """Search text for item using template string
 
         Parameters
         ----------
-        item : str or int
-            Name or index of field
         text : str
             Text to search
+        item : str or int
+            Name or index of field
 
         Returns
         -------
@@ -576,29 +587,109 @@ class Template:
         Examples
         --------
         Named format fields:
+
         >>> template = Template("My name is {name} and I am {age:d} years old")
-        >>> template.search("name", "My name is John and I am 42 years old")
+        >>> template.search("My name is John and I am 42 years old", "name")
         ('John', (11, 15))
 
         Indexed format fields:
+
         >>> template = Template("My name is {0} and I am {1:d} years old")
-        >>> template.search(0, "My name is John and I am 42 years old")
+        >>> template.search("My name is John and I am 42 years old", 0)
         ('John', (11, 15))
 
         Empty format fields:
+
         >>> template = Template("My name is {} and I am {:d} years old")
-        >>> template.search(0, "My name is John and I am 42 years old")
+        >>> template.search("My name is John and I am 42 years old", 0)
         ('John', (11, 15))
 
         Mixed format fields:
+
         >>> template = Template("My name is {} and I am {age:d} years old")
-        >>> template.search(0, "My name is John and I am 42 years old")
+        >>> template.search("My name is John and I am 42 years old", 0)
         ('John', (11, 15))
         """
         return _search(self._fields, item, text)
 
+    def format_file(self, file: Union[str, Path], data: Data) -> None:
+        """Formats data using a template string and writes the text to a file.
 
-def parse(template: str, text: str, ignore_case: bool = False) -> Result:
+        Parameters
+        ----------
+        file : str or pathlib.Path
+            The path of the file.
+        data : dict[str|int, Any]
+            Data to format
+
+        Examples
+        --------
+        Format a string and write it to a file:
+
+        >>> template = Template("My name is {name} and I am {age:d} years old")
+        >>> template.format_file({"name": "John", "age": 42})
+        """
+        file = Path(file)
+        text = self.format(data)
+        file.write_text(text)
+
+    def parse_file(self, file: Union[str, Path]) -> Data:
+        """Parses the contents of a file using a template string.
+
+        Parameters
+        ----------
+        file : str or pathlib.Path
+            The path of the file.
+
+        Returns
+        -------
+        data : dict[str|int, Any]
+            Parsed data as a dictionary
+
+        Examples
+        --------
+
+        Examples
+        --------
+        Parse the contents of a file:
+
+        >>> template = Template("My name is {name} and I am {age:d} years old")
+        >>> template.parse_file("data.txt")
+        {'name': 'John', 'age': 42}
+        """
+        file = Path(file)
+        text = file.read_text()
+        return self.parse(text)
+
+    def search_file(self, file: Union[str, Path], item: Key) -> SearchResult:
+        """Searches the contents of a file for item using a template string.
+
+        Parameters
+        ----------
+        file : str or pathlib.Path
+            The path of the file.
+        item : str or int
+            Name or index of field
+
+        Returns
+        -------
+        value : Any
+            Value of field
+        span : tuple[int, int]
+            Span of field in text
+
+        Examples
+        --------
+        >>> template = Template("My name is {name} and I am {age:d} years old")
+        >>> template.search_file("data.txt", "name")
+        ('John', (11, 15))
+        """
+        file = Path(file)
+        text = file.read_text()
+        return self.search(item, text)
+
+
+def parse(template: str, text: str, ignore_case: bool = False) -> Data:
     """Parse text using template string
 
     Parameters
@@ -619,7 +710,7 @@ def parse(template: str, text: str, ignore_case: bool = False) -> Result:
     --------
     Template.parse: Parse text using the `Template` instance
     """
-    return Template(template).parse(text)
+    return Template(template, ignore_case).parse(text)
 
 
 def search(
@@ -649,11 +740,11 @@ def search(
     --------
     Template.search: Search text for item using the `Template` instance
     """
-    return Template(template).search(item, text)
+    return Template(template, ignore_case).search(item, text)
 
 
 # noinspection PyShadowingBuiltins
-def format(template: str, data: Result) -> str:
+def format(template: str, data: Data) -> str:
     """Format data using template string
 
     Parameters
