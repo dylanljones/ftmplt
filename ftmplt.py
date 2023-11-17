@@ -54,16 +54,17 @@ to the functions above:
 import dataclasses
 import re
 import string
+from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-__all__ = ["Template", "parse", "search", "format"]
+__all__ = ["CustomFormatter", "Template", "parse", "search", "format"]
 
 Key = Union[int, str]
-Value = Union[int, float, str, datetime]
+Value = Any
 Data = Dict[Key, Value]
-SearchResult = Tuple[Any, Tuple[int, int]]
+SearchResult = Tuple[Value, Tuple[int, int]]
 
 # Integer format specifiers
 FMT_INT = (
@@ -350,17 +351,39 @@ def _get_field(fields: List[FormatField], item: Key) -> FormatField:
     raise KeyError(f"Field {item} not found")
 
 
+class CustomFormatter(ABC):
+    """Custom formatter for parsing and formatting a specific format field"""
+
+    def __init__(self, key: str):
+        self.key = key
+
+    @abstractmethod
+    def parse(self, text: str) -> Any:
+        """Parse the text of the format field and return the value."""
+        pass
+
+    @abstractmethod
+    def format(self, value: Any) -> str:
+        """Format the value of the format field and return the text."""
+        pass
+
+
 class Template:
     """String template for parsing and formatting"""
 
     def __init__(
         self,
         template: str,
+        *handlers: CustomFormatter,
         ignore_case: bool = False,
         flags: Union[int, re.RegexFlag] = None,
     ):
         self.template = template
         self._fields, self._pattern = _compile_fields(template, ignore_case, flags)
+        self._handlers = dict()
+        if handlers:
+            for handler in handlers:
+                self.add_handler(handler)
 
     @property
     def fields(self) -> List[FormatField]:
@@ -374,6 +397,16 @@ class Template:
     @property
     def positional_fields(self) -> Dict[str, FormatField]:
         return {field.name: field for field in self.fields if field.name.isdigit()}
+
+    def add_handler(self, handler: CustomFormatter) -> None:
+        """Add a custom format handler for a specific format field
+
+        Parameters
+        ----------
+        handler : CustomFormatter
+            Custom format handler.
+        """
+        self._handlers[handler.key] = handler
 
     def get_field(self, key: Key) -> FormatField:
         """Get field by name or index
@@ -433,6 +466,11 @@ class Template:
         >>> template.format({0: "John", "age": 42})
         'My name is John and I am 42 years old'
         """
+        for key, value in data.items():
+            if key in self._handlers:
+                handler = self._handlers[key]
+                value = handler.format(value)
+                data[key] = value
         args, kwargs = _split_data(data)
         return self.template.format(*args, **kwargs)
 
@@ -488,7 +526,12 @@ class Template:
             k = field.name
             if k.isdigit():
                 k = int(k)
-            data[k] = _convert_type(field, raw_data[field.group_name])
+            if k in self._handlers:
+                handler = self._handlers[k]
+                value = handler.parse(raw_data[field.group_name])
+            else:
+                value = _convert_type(field, raw_data[field.group_name])
+            data[k] = value
             # Get span of field
             # spans[k] = match.span(field.group_name)
         return data
@@ -542,7 +585,12 @@ class Template:
         if match is None:
             raise ValueError(f"Field {item} not found in text")
         value = match.group(field.group_name)
-        value = _convert_type(field, value)
+        k = field.name
+        if k in self._handlers:
+            handler = self._handlers[k]
+            value = handler.parse(value)
+        else:
+            value = _convert_type(field, value)
         span = match.span(field.group_name)
         return value, span
 
@@ -644,7 +692,7 @@ def parse(template: str, text: str, ignore_case: bool = False) -> Data:
     --------
     Template.parse: Parse text using the `Template` instance
     """
-    return Template(template, ignore_case).parse(text)
+    return Template(template, ignore_case=ignore_case).parse(text)
 
 
 def search(
@@ -674,7 +722,7 @@ def search(
     --------
     Template.search: Search text for item using the `Template` instance
     """
-    return Template(template, ignore_case).search(item, text)
+    return Template(template, ignore_case=ignore_case).search(item, text)
 
 
 # noinspection PyShadowingBuiltins
