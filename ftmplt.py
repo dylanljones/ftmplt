@@ -59,7 +59,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-__all__ = ["CustomFormatter", "Template", "parse", "search", "format"]
+__all__ = [
+    "CustomFormatter",
+    "Template",
+    "parse",
+    "search",
+    "format",
+    "parse_file",
+    "search_file",
+    "format_file",
+]
 
 Key = Union[int, str]
 Value = Any
@@ -120,7 +129,6 @@ FMT_DT = [
     "%G",
     "%u",
     "%V",
-    "%d/%m/%y %H:%M:%S.%f",
 ]
 
 
@@ -139,16 +147,16 @@ class FormatField:
 
 
 def format_string(name: str = None, spec: str = None, conv: str = None) -> str:
-    """Return format string for a single field
+    """Return format string for a single field.
 
     Parameters
     ----------
     name : str, optional
-        Name of the field, by default None
+        Name of the field, by default None.
     spec : str, optional
-        Format specifier, by default None
+        Format specifier, by default None.
     conv : str, optional
-        Conversion character, by default None
+        Conversion character, by default None.
 
     Returns
     -------
@@ -165,12 +173,12 @@ def format_string(name: str = None, spec: str = None, conv: str = None) -> str:
 
 
 def _format_type(spec: str = None) -> Optional[Tuple[Optional[type], Optional[int]]]:
-    """Return type of format specifier
+    """Return type of format specifier.
 
     Parameters
     ----------
     spec : str, optional
-        Format specifier, by default None
+        Format specifier, by default None.
 
     Returns
     -------
@@ -208,7 +216,7 @@ def _format_type(spec: str = None) -> Optional[Tuple[Optional[type], Optional[in
 
 
 def _convert_type(field: FormatField, value: Value) -> Value:
-    """Convert value to given type"""
+    """Convert value to given type."""
     # Parse int
     if field.type is int:
         return int(value, field.base) if field.base else int(value)
@@ -227,19 +235,19 @@ def _convert_type(field: FormatField, value: Value) -> Value:
 
 
 def _split_data(data: Dict[Key, Any]) -> Tuple[Tuple[Any], Dict[str, Any]]:
-    """Split data into args and kwargs
+    """Split data into args and kwargs.
 
     Parameters
     ----------
     data : dict[int|str, Any]
-        Data to split
+        Data to split.
 
     Returns
     -------
     args : tuple[Any]
-        Positional arguments
+        Positional arguments.
     kwargs : dict[str, Any]
-        Keyword arguments
+        Keyword arguments.
     """
     args, kwargs = list(), data.copy()
     for key, val in data.items():
@@ -252,21 +260,21 @@ def _split_data(data: Dict[Key, Any]) -> Tuple[Tuple[Any], Dict[str, Any]]:
 def _compile_fields(
     template: str, ignore_case: bool = False, flags: Union[int, re.RegexFlag] = None
 ) -> Tuple[List[FormatField], re.Pattern]:
-    """Compile format fields in template string and generate RegEx pattern
+    """Compile format fields in template string and generate RegEx pattern.
 
     Parameters
     ----------
     template : str
-        Template string
+        Template string.
     ignore_case : bool, optional
-        Ignore case when matching fields, by default False
+        Ignore case when matching fields, by default False.
     flags : int or re.RegexFlag, optional
-        Additional RegEx flags
+        Additional RegEx flags.
 
     Returns
     -------
     fields : list[FormatField]
-        List of format-string fields
+        List of format-string fields.
     pattern : re.Pattern
         Compiled RegEx pattern for parsing text with the template.
     """
@@ -331,14 +339,14 @@ def _compile_fields(
 
 
 def _get_field(fields: List[FormatField], item: Key) -> FormatField:
-    """Get field by name or index
+    """Get field by name or index.
 
     Parameters
     ----------
     fields : list[FormatField]
-        List of format-string fields
+        List of format-string fields.
     item : str or int
-        Name or index of field
+        Name or index of field.
 
     Returns
     -------
@@ -352,7 +360,7 @@ def _get_field(fields: List[FormatField], item: Key) -> FormatField:
 
 
 class CustomFormatter(ABC):
-    """Custom formatter for parsing and formatting a specific format field"""
+    """Custom formatter for parsing and formatting a specific format field."""
 
     def __init__(self, key: str):
         self.key = key
@@ -387,7 +395,7 @@ class Template:
 
     @property
     def fields(self) -> List[FormatField]:
-        """List of format-string fields"""
+        """List of format-string fields."""
         return self._fields
 
     @property
@@ -399,7 +407,7 @@ class Template:
         return {field.name: field for field in self.fields if field.name.isdigit()}
 
     def add_handler(self, handler: CustomFormatter) -> None:
-        """Add a custom format handler for a specific format field
+        """Adds a custom format handler for a specific format field.
 
         Parameters
         ----------
@@ -409,12 +417,12 @@ class Template:
         self._handlers[handler.key] = handler
 
     def get_field(self, key: Key) -> FormatField:
-        """Get field by name or index
+        """Gets a field by name or index.
 
         Parameters
         ----------
         key : str or int
-            Name or index of field
+            Name or index of field.
 
         Returns
         -------
@@ -427,65 +435,18 @@ class Template:
                 return field
         raise _get_field(self._fields, key)
 
-    def format(self, data: Data) -> str:
-        """Format data using template string
-
-        Parameters
-        ----------
-        data : dict[str|int, Any]
-            Data to format
-
-        Returns
-        -------
-        text : str
-            Formatted text
-
-        Examples
-        --------
-        Named format fields:
-
-        >>> template = Template("My name is {name} and I am {age:d} years old")
-        >>> template.format({"name": "John", "age": 42})
-        'My name is John and I am 42 years old'
-
-        Indexed format fields:
-
-        >>> template = Template("My name is {0} and I am {1:d} years old")
-        >>> template.format({0: "John", 1: 42})
-        'My name is John and I am 42 years old'
-
-        Empty format fields:
-
-        >>> template = Template("My name is {} and I am {:d} years old")
-        >>> template.format({0: "John", 1: 42})
-        'My name is John and I am 42 years old'
-
-        Mixed format fields:
-
-        >>> template = Template("My name is {} and I am {age:d} years old")
-        >>> template.format({0: "John", "age": 42})
-        'My name is John and I am 42 years old'
-        """
-        for key, value in data.items():
-            if key in self._handlers:
-                handler = self._handlers[key]
-                value = handler.format(value)
-                data[key] = value
-        args, kwargs = _split_data(data)
-        return self.template.format(*args, **kwargs)
-
     def parse(self, text: str) -> Data:
-        """Parse text using template string
+        """Parses text using the template instance.
 
         Parameters
         ----------
         text : str
-            Text to parse
+            The text to parse.
 
         Returns
         -------
         data : dict[str|int, Any]
-            Parsed data as a dictionary
+            The parsed data as a dictionary.
 
         Examples
         --------
@@ -537,21 +498,21 @@ class Template:
         return data
 
     def search(self, text: str, item: Key) -> SearchResult:
-        """Search text for item using template string
+        """Searches text for item using the template instance.
 
         Parameters
         ----------
         text : str
-            Text to search
+            The text to parse using the format string.
         item : str or int
-            Name or index of field
+            The name or index of the format field to search for.
 
         Returns
         -------
         value : Any
-            Value of field
+            The value of the field.
         span : tuple[int, int]
-            Span of field in text
+            The span of the field in the text.
 
         Examples
         --------
@@ -594,42 +555,65 @@ class Template:
         span = match.span(field.group_name)
         return value, span
 
-    def format_file(self, file: Union[str, Path], data: Data) -> None:
-        """Formats data using a template string and writes the text to a file.
+    def format(self, data: Data) -> str:
+        """Formats data using the template instance.
 
         Parameters
         ----------
-        file : str or pathlib.Path
-            The path of the file.
         data : dict[str|int, Any]
-            Data to format
+            The data to format using the format string.
+
+        Returns
+        -------
+        text : str
+            The formatted text.
 
         Examples
         --------
-        Format a string and write it to a file:
+        Named format fields:
 
         >>> template = Template("My name is {name} and I am {age:d} years old")
-        >>> template.format_file({"name": "John", "age": 42})
+        >>> template.format({"name": "John", "age": 42})
+        'My name is John and I am 42 years old'
+
+        Indexed format fields:
+
+        >>> template = Template("My name is {0} and I am {1:d} years old")
+        >>> template.format({0: "John", 1: 42})
+        'My name is John and I am 42 years old'
+
+        Empty format fields:
+
+        >>> template = Template("My name is {} and I am {:d} years old")
+        >>> template.format({0: "John", 1: 42})
+        'My name is John and I am 42 years old'
+
+        Mixed format fields:
+
+        >>> template = Template("My name is {} and I am {age:d} years old")
+        >>> template.format({0: "John", "age": 42})
+        'My name is John and I am 42 years old'
         """
-        file = Path(file)
-        text = self.format(data)
-        file.write_text(text)
+        for key, value in data.items():
+            if key in self._handlers:
+                handler = self._handlers[key]
+                value = handler.format(value)
+                data[key] = value
+        args, kwargs = _split_data(data)
+        return self.template.format(*args, **kwargs)
 
     def parse_file(self, file: Union[str, Path]) -> Data:
-        """Parses the contents of a file using a template string.
+        """Parses the contents of a file using the template instance.
 
         Parameters
         ----------
         file : str or pathlib.Path
-            The path of the file.
+            The path of the file to parse.
 
         Returns
         -------
         data : dict[str|int, Any]
-            Parsed data as a dictionary
-
-        Examples
-        --------
+            Parsed data as a dictionary.
 
         Examples
         --------
@@ -644,21 +628,21 @@ class Template:
         return self.parse(text)
 
     def search_file(self, file: Union[str, Path], item: Key) -> SearchResult:
-        """Searches the contents of a file for item using a template string.
+        """Searches the contents of a file for item using the template instance.
 
         Parameters
         ----------
         file : str or pathlib.Path
             The path of the file.
         item : str or int
-            Name or index of field
+            Name or index of field.
 
         Returns
         -------
         value : Any
-            Value of field
+            Value of field.
         span : tuple[int, int]
-            Span of field in text
+            Span of field in text.
 
         Examples
         --------
@@ -670,76 +654,205 @@ class Template:
         text = file.read_text()
         return self.search(item, text)
 
+    def format_file(self, file: Union[str, Path], data: Data) -> None:
+        """Formats data using a template string and writes the text to a file.
 
-def parse(template: str, text: str, ignore_case: bool = False) -> Data:
-    """Parse text using template string
+        Parameters
+        ----------
+        file : str or pathlib.Path
+            The path of the file.
+        data : dict[str|int, Any]
+            The data to format.
+
+        Examples
+        --------
+        Format a string and write it to a file:
+
+        >>> template = Template("My name is {name} and I am {age:d} years old")
+        >>> template.format_file({"name": "John", "age": 42})
+        """
+        file = Path(file)
+        text = self.format(data)
+        file.write_text(text)
+
+
+def parse(
+    template: str, text: str, *handlers: CustomFormatter, ignore_case: bool = False
+) -> Data:
+    """Parses text using a template string.
 
     Parameters
     ----------
     template : str
-        Template string
+        The template format string.
     text : str
-        Text to parse
+        The text to parse using the format string.
+    handlers : CustomFormatter
+        Custom formatters to use when parsing fields.
     ignore_case : bool, optional
-        Ignore case when matching fields, by default False
+        Ignore case when matching fields, by default False.
 
     Returns
     -------
     data : dict[str|int, Any]
-        Parsed data as a dictionary
+        The parsed data as a dictionary.
 
     See Also
     --------
-    Template.parse: Parse text using the `Template` instance
+    Template.parse: Parse text using the `Template` instance.
     """
-    return Template(template, ignore_case=ignore_case).parse(text)
+    return Template(template, *handlers, ignore_case=ignore_case).parse(text)
 
 
 def search(
-    template: str, text: str, item: Key, ignore_case: bool = False
+    template: str,
+    text: str,
+    item: Key,
+    *handlers: CustomFormatter,
+    ignore_case: bool = False,
 ) -> SearchResult:
-    """Search text for item using template string
+    """Searches text for item using a template string
 
     Parameters
     ----------
     template : str
-        Template string
+        The template format string.
     text : str
-        Text to search
+        The text to parse using the format string.
+    item : str or int
+        The name or index of the format field to search for.
+    handlers : CustomFormatter
+        Custom formatters to use when parsing fields.
+    ignore_case : bool, optional
+        Ignore case when matching fields, by default False.
+
+    Returns
+    -------
+    value : Any
+        The value of the field.
+    span : tuple[int, int]
+        The span of the field in the text.
+
+    See Also
+    --------
+    Template.search: Search text for item using the `Template` instance.
+    """
+    return Template(template, *handlers, ignore_case=ignore_case).search(text, item)
+
+
+# noinspection PyShadowingBuiltins
+def format(template: str, data: Data, *handlers: CustomFormatter) -> str:
+    """Formats data using a template string.
+
+    Parameters
+    ----------
+    template : str
+        The template format string.
+    data : dict[str|int, Any]
+        The data to format using the format string.
+    handlers : CustomFormatter
+        Custom formatters to use when formatting fields.
+
+    Returns
+    -------
+    text : str
+        The formatted text.
+
+    See Also
+    --------
+    Template.format: Format string using the `Template` instance.
+    """
+    return Template(template, *handlers).format(data)
+
+
+def parse_file(
+    template: str,
+    file: Union[str, Path],
+    *handlers: CustomFormatter,
+    ignore_case: bool = False,
+) -> Data:
+    """Parses the contents of a file using a template string.
+
+    Parameters
+    ----------
+    template : str
+        The template format string.
+    file : str or pathlib.Path
+        The path of the file to parse.
+    handlers : CustomFormatter
+        Custom formatters to use when parsing fields.
+    ignore_case : bool, optional
+        Ignore case when matching fields, by default False.
+
+    Returns
+    -------
+    data : dict[str|int, Any]
+        Parsed data as a dictionary.
+
+    See Also
+    --------
+    Template.parse_file: Parse file using the `Template` instance.
+    """
+    return Template(template, *handlers, ignore_case=ignore_case).parse_file(file)
+
+
+def search_file(
+    template: str,
+    file: Union[str, Path],
+    item: Key,
+    *handlers: CustomFormatter,
+    ignore_case: bool = False,
+) -> SearchResult:
+    """Search text for item using a template string.
+
+    Parameters
+    ----------
+    template : str
+        The template format string.
+    file : str or pathlib.Path
+        The path of the file.
     item : str or int
         Name or index of field
+    handlers : CustomFormatter
+        Custom formatters to use when parsing fields.
     ignore_case : bool, optional
         Ignore case when matching fields, by default False
 
     Returns
     -------
     value : Any
-        Value of field
+        The value of the field.
     span : tuple[int, int]
-        Span of field in text
+        The span of the field in the text.
 
     See Also
     --------
-    Template.search: Search text for item using the `Template` instance
+    Template.search_file: Search text for item using the `Template` instance
     """
-    return Template(template, ignore_case=ignore_case).search(item, text)
+    return Template(template, *handlers, ignore_case=ignore_case).search_file(
+        file, item
+    )
 
 
 # noinspection PyShadowingBuiltins
-def format(template: str, data: Data) -> str:
-    """Format data using template string
+def format_file(
+    template: str, file: Union[str, Path], data: Data, *handlers: CustomFormatter
+) -> None:
+    """Format data using a template string.
 
     Parameters
     ----------
     template : str
-        Template string
+        The template format string.
+    file : str or pathlib.Path
+        The path of the file.
     data : dict[str|int, Any]
-        Data to format
+        The data to format.
+    handlers : CustomFormatter
+        Custom formatters to use when formatting fields.
 
-    Returns
-    -------
-    text : str
-        Formatted text
+    See Also
+    --------
+    Template.format_file: Format file using the `Template` instance.
     """
-    args, kwargs = _split_data(data)
-    return template.format(*args, **kwargs)
+    Template(template, *handlers).format_file(file, data)
