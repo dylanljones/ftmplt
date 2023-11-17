@@ -274,6 +274,26 @@ def test_parse_datetime(fmt):
     assert parsed[0] == actual
 
 
+def test_custom_formatter():
+    class ArrayFormatter(ftmplt.CustomFormatter):
+        def parse(self, text: str):
+            values = text.split(",")
+            return [int(v) for v in values]
+
+        def format(self, value) -> str:
+            return ", ".join([str(v) for v in value])
+
+    array_formatter = ArrayFormatter("b")
+
+    tmplt = "Beginning {a:d} and {b} end"
+    data = {"a": 1, "b": [4, 5, 6]}
+    s = ftmplt.format(tmplt, data, array_formatter)
+    assert s == "Beginning 1 and 4, 5, 6 end"
+    parsed = ftmplt.parse(tmplt, s, array_formatter)
+    assert parsed["a"] == data["a"]
+    assert parsed["b"] == data["b"]
+
+
 def test_default_fields():
     fstr = "Beginning {} {:d} {:f} end"
     a, b, c = "text", 1, 1.1
@@ -312,6 +332,17 @@ def test_mixed_fields():
     assert parsed[0] == a
     assert parsed[1] == b
     assert parsed["c"] == c
+
+
+def test_double_fields():
+    fstr = "Beginning {a:d} {b:d} {a:d} end"
+    a, b = 1, 2
+    s = fstr.format(a=a, b=b)
+    assert s == "Beginning 1 2 1 end"
+    parsed = ftmplt.parse(fstr, s)
+    assert len(parsed) == 2
+    assert parsed["a"] == a
+    assert parsed["b"] == b
 
 
 def test_multiline_text():

@@ -594,6 +594,7 @@ class Template:
         >>> template.format({0: "John", "age": 42})
         'My name is John and I am 42 years old'
         """
+        data = data.copy()
         for key, value in data.items():
             if key in self._handlers:
                 handler = self._handlers[key]
