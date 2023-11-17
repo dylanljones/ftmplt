@@ -329,44 +329,6 @@ def _compile_fields(
     return fields, pattern_full
 
 
-def _parse(
-    fields: List[FormatField], pattern: re.Pattern, text: str
-) -> Tuple[Data, Dict[Key, Tuple[int, int]]]:
-    """Parse text with format-string fields
-
-    Parameters
-    ----------
-    fields : List[FormatField]
-        List of format-string fields
-    pattern : re.Pattern
-        Compiled RegEx pattern for parsing text with the template.
-    text : str
-        Text to parse
-
-    Returns
-    -------
-    data : dict[str|int, Any]
-        Parsed data as a dictionary
-    spans : dict[str|int, tuple[int, int]]
-        Spans of parsed data
-    """
-    text = text.strip()
-    match = pattern.match(text)
-    raw_data = match.groupdict()
-    data = dict()
-    spans = dict()
-    for field in fields:
-        # Try to convert to int or float
-        k = field.name
-        if k.isdigit():
-            k = int(k)
-        data[k] = _convert_type(field, raw_data[field.group_name])
-        # Get span of field
-        spans[k] = match.span(field.group_name)
-
-    return data, spans
-
-
 def _get_field(fields: List[FormatField], item: Key) -> FormatField:
     """Get field by name or index
 
@@ -386,55 +348,6 @@ def _get_field(fields: List[FormatField], item: Key) -> FormatField:
         if field.name == item:
             return field
     raise KeyError(f"Field {item} not found")
-
-
-def _search(fields: List[FormatField], item: Key, text: str) -> SearchResult:
-    """Search for a single field in text
-
-    Parameters
-    ----------
-    fields : list[FormatField]
-        List of format-string fields
-    item : str or int
-        Name or index of field
-    text : str
-        Text to search
-
-    Returns
-    -------
-    value : Any
-        Value of field
-    span : tuple[int, int]
-        Span of field in text
-    """
-    text = text.strip()
-    field = _get_field(fields, item)
-    match = field.pattern.search(text)
-    if match is None:
-        raise ValueError(f"Field {item} not found in text")
-    value = match.group(field.group_name)
-    value = _convert_type(field, value)
-    span = match.span(field.group_name)
-    return value, span
-
-
-def _format(template: str, data: Data) -> str:
-    """Generated formated string from template and data
-
-    Parameters
-    ----------
-    template : str
-        Template string
-    data : dict[str|int, Any]
-        Data to format
-
-    Returns
-    -------
-    text : str
-        Formatted text
-    """
-    args, kwargs = _split_data(data)
-    return template.format(*args, **kwargs)
 
 
 class Template:
@@ -520,7 +433,8 @@ class Template:
         >>> template.format({0: "John", "age": 42})
         'My name is John and I am 42 years old'
         """
-        return _format(self.template, data)
+        args, kwargs = _split_data(data)
+        return self.template.format(*args, **kwargs)
 
     def parse(self, text: str) -> Data:
         """Parse text using template string
@@ -564,7 +478,19 @@ class Template:
         >>> template.parse("My name is John and I am 42 years old")
         {0: 'John', 'age': 42}
         """
-        data, span = _parse(self._fields, self._pattern, text)
+        text = text.strip()
+        match = self._pattern.match(text)
+        raw_data = match.groupdict()
+        data = dict()
+        # spans = dict()
+        for field in self._fields:
+            # Try to convert to int or float
+            k = field.name
+            if k.isdigit():
+                k = int(k)
+            data[k] = _convert_type(field, raw_data[field.group_name])
+            # Get span of field
+            # spans[k] = match.span(field.group_name)
         return data
 
     def search(self, text: str, item: Key) -> SearchResult:
@@ -610,7 +536,15 @@ class Template:
         >>> template.search("My name is John and I am 42 years old", 0)
         ('John', (11, 15))
         """
-        return _search(self._fields, item, text)
+        text = text.strip()
+        field = _get_field(self._fields, item)
+        match = field.pattern.search(text)
+        if match is None:
+            raise ValueError(f"Field {item} not found in text")
+        value = match.group(field.group_name)
+        value = _convert_type(field, value)
+        span = match.span(field.group_name)
+        return value, span
 
     def format_file(self, file: Union[str, Path], data: Data) -> None:
         """Formats data using a template string and writes the text to a file.
@@ -759,4 +693,5 @@ def format(template: str, data: Data) -> str:
     text : str
         Formatted text
     """
-    return _format(template, data)
+    args, kwargs = _split_data(data)
+    return template.format(*args, **kwargs)
