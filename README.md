@@ -159,7 +159,7 @@ file = "data.txt"
 template = ftmplt.Template("""
 Input-File
 N={n:d} M={m:d}
-X={x:.1f} Y={y:.1f} Z={z:.f}
+X={x:.1f} Y={y:.1f} Z={z:.1f}
 Multiline text:
 {text}
 """)
@@ -171,6 +171,22 @@ data["n"] = 100
 ...
 # Update file contents
 template.format_file(file, data)
+```
+
+The template string can also be read from the file itself, for example ``data.txt.tmplt``:
+```text
+Input-File
+N={n:d} M={m:d}
+X={x:.1f} Y={y:.1f} Z={z:.1f}
+Multiline text:
+{text}
+```
+The code to read the template and parse the file is then:
+```python
+import ftmplt
+
+template = ftmplt.Template.from_file("data.txt.tmplt")
+...
 ```
 
 [parse]: https://github.com/r1chardj0n3s/parse

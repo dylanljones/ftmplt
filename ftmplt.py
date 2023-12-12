@@ -377,7 +377,24 @@ class CustomFormatter(ABC):
 
 
 class Template:
-    """String template for parsing and formatting"""
+    """String template for parsing and formatting.
+
+    Parameters
+    ----------
+    template : str
+        The template format string.
+    handlers : CustomFormatter
+        Custom formatters to use when parsing fields.
+    ignore_case : bool, optional
+        Ignore case when matching fields, by default False.
+    flags : int or re.RegexFlag, optional
+        Additional RegEx flags.
+
+    Attributes
+    ----------
+    template : str
+        The template format string.
+    """
 
     def __init__(
         self,
@@ -392,6 +409,33 @@ class Template:
         if handlers:
             for handler in handlers:
                 self.add_handler(handler)
+
+    @classmethod
+    def from_file(
+        cls,
+        template_file: Union[str, Path],
+        *handlers: CustomFormatter,
+        ignore_case: bool = False,
+        flags: Union[int, re.RegexFlag] = None,
+    ) -> "Template":
+        """Create a template from a file.
+
+        Parameters
+        ----------
+        template_file : str or Path
+            The file containing the template format string.
+        handlers : CustomFormatter
+            Custom formatters to use when parsing fields.
+        ignore_case : bool, optional
+            Ignore case when matching fields, by default False.
+        flags : int or re.RegexFlag, optional
+            Additional RegEx flags.
+        """
+        template_file = Path(template_file)
+        if not template_file.exists():
+            raise FileNotFoundError(f"Template file {template_file} not found")
+        template = template_file.read_text()
+        return cls(template, *handlers, ignore_case=ignore_case, flags=flags)
 
     @property
     def fields(self) -> List[FormatField]:
