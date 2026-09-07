@@ -118,8 +118,8 @@ integers, use the following formatter:
 ````python
 import ftmplt
 
-class ArrayFormatter(ftmplt.CustomFormatter):
 
+class ArrayFormatter(ftmplt.CustomFormatter):
     def parse(self, text: str):
         return [int(v) for v in text.split(",")]
 
